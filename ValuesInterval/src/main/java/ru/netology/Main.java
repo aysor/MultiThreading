@@ -56,6 +56,7 @@ public class Main {
         long endTs = System.currentTimeMillis(); // end time
         System.out.println("max = " + max);
         System.out.println("Time: " + (endTs - startTs) + "ms");
+        threadPool.shutdown();
     }
 
     public static String generateText(String letters, int length) {
