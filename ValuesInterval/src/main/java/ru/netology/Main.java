@@ -1,6 +1,10 @@
 package ru.netology;
 
 import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Main {
 
@@ -12,10 +16,12 @@ public class Main {
 
         long startTs = System.currentTimeMillis(); // start time
 
-        List<Thread> threads = new ArrayList<>();
+        List<Future<Integer>> results = new ArrayList<>();
+
+        ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
         for (String text : texts) {
-            Thread thread = new Thread(() -> {
+            results.add(threadPool.submit(() -> {
                 int maxSize = 0;
                 for (int i = 0; i < text.length(); i++) {
                     for (int j = 0; j < text.length(); j++) {
@@ -35,16 +41,22 @@ public class Main {
                     }
                 }
                 System.out.println(text.substring(0, 100) + " -> " + maxSize);
-            });
-            threads.add(thread);
-            thread.start();
+                return maxSize;
+            }));
         }
-        for (Thread thread : threads) {
-            thread.join(); // зависаем, ждём когда поток объект которого лежит в thread завершится
+        int max = 0;
+        try {
+            for (Future<Integer> result : results) {
+                int curInterval = result.get();
+                max = Math.max(max, curInterval);
+            }
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
         }
         long endTs = System.currentTimeMillis(); // end time
-
+        System.out.println("max = " + max);
         System.out.println("Time: " + (endTs - startTs) + "ms");
+        threadPool.shutdown();
     }
 
     public static String generateText(String letters, int length) {
