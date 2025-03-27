@@ -6,7 +6,8 @@ public class Main {
 
     public static void main(String[] args) {
         ExecutorService threadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
-
+        LeaderUpdater updater = new LeaderUpdater();
+        updater.start();
         for (int i = 0; i < 10; i++) {
             threadPool.submit(new RouteAnalyser());
         }
@@ -16,28 +17,17 @@ public class Main {
         } catch (InterruptedException e) {
             System.out.println(e);
         }
+        updater.interrupt();
         printStat();
     }
 
     private static void printStat() {
-        //System.out.println("Частота подряд идущих литер 'R':");
-        int max = maxFreq();
-        System.out.printf("Самое частое количество повторений: %d (встретилось %d раз)\n", max, RouteAnalyser.sizeToFreq.get(max));
-        System.out.println("Другие размеры:");
-        for (int s : RouteAnalyser.sizeToFreq.keySet()) {
-            if(s != max) {
+        synchronized (RouteAnalyser.sizeToFreq) {
+            System.out.println("\n\nЧастота подряд идущих литер 'R':");
+            for (int s : RouteAnalyser.sizeToFreq.keySet()) {
                 System.out.printf(" - %d (%d раз)\n", s, RouteAnalyser.sizeToFreq.get(s));
             }
         }
-    }
-    private static int maxFreq(){
-        int max = 0;
-        for(int s : RouteAnalyser.sizeToFreq.keySet()){
-            if (s > max){
-                max = s;
-            }
-        }
-        return max;
     }
 
 }

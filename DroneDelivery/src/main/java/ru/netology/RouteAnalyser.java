@@ -28,6 +28,11 @@ public class RouteAnalyser extends Thread {
                 size++;
             } else if (size > 0){
                 synchronized (sizeToFreq) {
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException e) {
+                        throw new RuntimeException(e);
+                    }
                     int freq = sizeToFreq.getOrDefault(size, 0);
                     sizeToFreq.put(size, freq + 1);
                     sizeToFreq.notify();
